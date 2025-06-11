@@ -37,8 +37,9 @@ function saveCode(showModal = true) {
                 title: "Success",
                 text: "Code saved successfully!",
                 confirmButtonText: "OK",
+                confirmButtonColor: "#007BFF",
                 color: "#1b2924",
-                background: "#f0f3bd",
+                background: "#daffe4",
                 timer: 2500
               });
             } else {
@@ -51,6 +52,9 @@ function saveCode(showModal = true) {
             }
         } else {
             document.getElementsByClassName('status')[0].style.display = 'flex';
+            if (document.activeElement.id === 'code-share') {
+              document.activeElement.blur();
+            }
         }
     })
     .catch((error) => {
