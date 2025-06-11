@@ -3,13 +3,16 @@
   "version": "1.0.0",
   "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
     "start:dev": "nodemon src/server.js"
   },
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "author": "GandalfTheBlack16",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GandalfTheBlack16/my-code-share"
+  },
+  "license": "Apache-2.0",
+  "description": "Simple Code share with WebSockets and Mongo integration",
   "type": "module",
   "dependencies": {
     "express": "^4.21.2",
