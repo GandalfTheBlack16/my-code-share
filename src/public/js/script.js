@@ -1,8 +1,13 @@
 const socket = io();
 let timeout;
 let clearStateTimeout;
+let tabs = [];
+let currentTab = '';
 
-socket.on("code", function (data) {
+socket.on("code", function ({tab, data}) {
+  if (tab !== currentTab) {
+      return; // Ignore updates for other tabs
+  }
   document.getElementById("code-share").value = data;
 });
 
@@ -11,7 +16,7 @@ function keyUpEventHandler(event) {
         clearTimeout(timeout);
         document.getElementsByClassName('status')[0].style.display = 'none';
     }
-    socket.emit('code', event.target.value);
+    socket.emit('code', {tab: currentTab, data: event.target.value});
     timeout = setTimeout(() => {
         console.log("Saving code automatically...");
         saveCode(false);
@@ -27,7 +32,7 @@ function saveCode(showModal = true) {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ code: document.getElementById("code-share").value }),
+    body: JSON.stringify({ tab: currentTab, code: document.getElementById("code-share").value }),
   })
     .then((response) => {
         if (showModal) {
@@ -67,8 +72,21 @@ function saveCode(showModal = true) {
     });
 }
 
-function loadCode() {
-  fetch("/load")
+function loadTabs() {
+  return fetch("/tabs")
+    .then((response) => response.json());
+}
+
+function loadCode(tab = '') {
+  currentTab = tab;
+  const tabList = document.querySelector(".tabs ul");
+  tabList.querySelectorAll("li").forEach((li) => {
+    li.classList.remove("active");
+    if (li.textContent === tab) {
+      li.classList.add("active");
+    }
+  });
+  fetch(`/load/${tab}`)
     .then((response) => response.json())
     .then((data) => {
       document.getElementById("code-share").value = data.code;
@@ -76,5 +94,21 @@ function loadCode() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-  loadCode();
+  loadTabs()
+    .then((data) => {
+      tabs = data.tabs || [];
+      const tabList = document.querySelector(".tabs ul");
+      tabList.innerHTML = "";
+      currentTab = tabs.length > 0 ? tabs[0] : '';
+      tabs.forEach((tab) => {
+        const li = document.createElement("li");
+        li.textContent = tab;
+        li.addEventListener("click", () => loadCode(tab));
+        tabList.appendChild(li);
+        if (tab === currentTab) {
+          li.classList.add("active");
+        }
+      });
+      loadCode(currentTab);
+    });
 });
