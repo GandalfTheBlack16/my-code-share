@@ -38,7 +38,7 @@ export async function getData({ owner, tab }) {
 
 export async function getTabs() {
     try {
-        const docs = await code.find({}).toArray();
+        const docs = await code.find({}, { projection: {'tab': 1} }).toArray();
         return docs.map(doc => doc.tab);
     } catch (error) {
         console.error('Error retrieving tabs:', error);
