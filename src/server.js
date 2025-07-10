@@ -2,7 +2,7 @@ import express from "express";
 import http from "http";
 import path from "path";
 import { Server } from "socket.io";
-import { connect, save, getData } from "./db/db.js";
+import { connect, save, getData, getTabs } from "./db/db.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -18,8 +18,19 @@ app.get("/", (_req, res) => {
   res.sendFile(path.join(process.cwd(), "src", "public", "index.html"));
 });
 
-app.get("/load", (_req, res) => {
-  getData({ owner: "test" })
+app.get('/tabs', (_req, res) => {
+  getTabs()
+    .then((tabs) => {
+      res.json({ tabs: tabs || [] });
+    })
+    .catch((err) => {
+      console.error("Error retrieving tabs:", err);
+      res.status(500).send("Error retrieving tabs");
+    });
+});
+
+app.get("/load/:tab", (req, res) => {
+  getData({ owner: "test", tab: req.params.tab })
     .then((data) => {
       res.json({ code: data || "" });
     })
@@ -30,7 +41,8 @@ app.get("/load", (_req, res) => {
 });
 
 app.post("/save", express.json(), (req, res) => {
-  save({ owner: "test", data: req.body.code })
+  const {tab, code} = req.body;
+  save({ owner: "test", tab, data: code })
     .then(() => {
       console.log("Data saved successfully");
     })
